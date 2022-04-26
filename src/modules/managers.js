@@ -12,6 +12,8 @@ module.exports = {
       store_owner_email,
       store_owner_phone,
       tag_number,
+      doc_front,
+      doc_verse,
     } = req.body;
 
     const recipients = await prisma.tb_recipients.findMany();
@@ -21,6 +23,8 @@ module.exports = {
 
     const resp = await prisma.tb_managers.create({
       data: {
+        doc_front,
+        doc_verse,
         store_name,
         store_cnpj,
         store_owner_name,
@@ -61,6 +65,12 @@ module.exports = {
           <b>Números das TAGS:  <span style="font-weight: normal;">${
             resp?.tag_number
           }</span></b><br/>
+          <b>Termo de Confissão de Dívida assinado pelo responsável pela loja (FRENTE):  <span style="font-weight: normal;">${
+            resp?.doc_front
+          }</span></b><br/>
+          <b>Termo de Confissão de Dívida assinado pelo responsável pela loja (VERSO):  <span style="font-weight: normal;">${
+            resp?.doc_verse
+          }</span></b><br/>
         </div>
         </div>
       </main>
@@ -75,5 +85,34 @@ module.exports = {
   async getList(req, res) {
     const resp = await prisma.tb_managers_list.findMany();
     res.status(200).send(resp);
+  },
+
+  async exportManagers(req, res) {
+    const resp = await prisma.tb_managers.findMany({
+      where: { deleted_at: null },
+      include: { tb_managers_list: true },
+    });
+
+    const nresp = resp.map(
+      (i) =>
+        (i = {
+          NomeGestor: i.tb_managers_list?.name,
+          CpfGestor: i.tb_managers_list?.cpf,
+          NomeLoja: i.store_name,
+          CnpjLoja: i.store_cnpj,
+          NomeResponsavel: i.store_owner_name,
+          EmailResponsavel: i.store_owner_email,
+          TelefoneResponsavel: i.store_owner_phone,
+          NumeroTags: i.tag_number,
+          DocumentoFrente: i.doc_front
+            ? i.doc_front.split('?AWSAccessKeyId')[0]
+            : '',
+          DocumentoVerso: i.doc_verse
+            ? i.doc_verse?.split('?AWSAccessKeyId')[0]
+            : '',
+        })
+    );
+
+    res.status(200).send(nresp);
   },
 };

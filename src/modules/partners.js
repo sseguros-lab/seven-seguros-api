@@ -97,4 +97,31 @@ module.exports = {
 
     res.status(200).send(resp);
   },
+
+  async exportPartners(req, res) {
+    const resp = await prisma.tb_partners.findMany({
+      where: { deleted_at: null },
+    });
+
+    const nresp = resp.map(
+      (i) =>
+        (i = {
+          NomeLoja: i.store_name,
+          EmailLoja: i.store_email,
+          TelefoneCliente: i.client_phone,
+          EmailCliente: i.client_email,
+          CepCliente: i.client_address_cep,
+          NumeroCliente: i.client_address_number,
+          NumeroTag: i.tag_number,
+          DocumentoCliente: i.user_document
+            ? i.user_document.split('?AWSAccessKeyId')[0]
+            : '',
+          DocumentoVeiculo: i.vehicle_document
+            ? i.vehicle_document.split('?AWSAccessKeyId')[0]
+            : '',
+        })
+    );
+
+    res.status(200).send(nresp);
+  },
 };

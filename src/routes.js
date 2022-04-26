@@ -10,8 +10,10 @@ routes.get('/', (req, res) => {
 });
 
 routes.get('/managers', Managers.getList);
+routes.get('/export-managers', Managers.exportManagers);
 routes.post('/new-manager', Managers.create);
 routes.post('/new-partner', Partners.create);
+routes.get('/export-partners', Partners.exportPartners);
 routes.post('/add-recipient', Recipients.create);
 routes.delete('/delete-recipient', Recipients.delete);
 
