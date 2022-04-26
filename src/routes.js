@@ -9,6 +9,7 @@ routes.get('/', (req, res) => {
   res.status(200).send({ message: 'Welcome to Seven Seguros API' });
 });
 
+routes.get('/managers', Managers.getList);
 routes.post('/new-manager', Managers.create);
 routes.post('/new-partner', Partners.create);
 routes.post('/add-recipient', Recipients.create);

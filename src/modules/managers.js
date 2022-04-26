@@ -5,7 +5,7 @@ const { sendMail } = require('../services/mail');
 module.exports = {
   async create(req, res) {
     const {
-      manager_cpf,
+      manager_id,
       store_name,
       store_cnpj,
       store_owner_name,
@@ -15,16 +15,19 @@ module.exports = {
     } = req.body;
 
     const recipients = await prisma.tb_recipients.findMany();
+    const manager = await prisma.tb_managers_list.findFirst({
+      where: { id: parseInt(manager_id) },
+    });
 
     const resp = await prisma.tb_managers.create({
       data: {
-        manager_cpf,
         store_name,
         store_cnpj,
         store_owner_name,
         store_owner_email,
         store_owner_phone,
         tag_number,
+        tb_managers_list: { connect: { id: parseInt(manager_id) } },
       },
     });
 
@@ -37,8 +40,8 @@ module.exports = {
           }. Aqui estão os dados da nova loja cadastrada:</h4>
         </div>
         <div>
-          <b>CPF do gestor: <span style="font-weight: normal;">${
-            resp?.manager_cpf
+          <b>Nome do gestor: <span style="font-weight: normal;">${
+            manager?.name
           }</span></b><br/>
           <b>Nome da loja: <span style="font-weight: normal;">${
             resp?.store_name
@@ -66,6 +69,11 @@ module.exports = {
       sendMail(recipient.email, html, 'Nova loja cadastrada pelo gestor');
     }
 
+    res.status(200).send(resp);
+  },
+
+  async getList(req, res) {
+    const resp = await prisma.tb_managers_list.findMany();
     res.status(200).send(resp);
   },
 };
